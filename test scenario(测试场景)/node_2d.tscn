@@ -2,11 +2,17 @@
 
 [ext_resource type="Script" uid="uid://c75d42liq8npr" path="res://中文/脚本/轮播图.gd" id="1_3kbsy"]
 [ext_resource type="Texture2D" uid="uid://q1sqpt58xp0d" path="res://icon.svg" id="2_c0877"]
+[ext_resource type="Script" uid="uid://cjscxcnxtw4xt" path="res://English/script/rotating_carousel.gd" id="3_j7xa3"]
 
 [node name="Node2D" type="Node2D" unique_id=1451292807]
 metadata/_edit_lock_ = true
 
-[node name="Node2D" type="Node2D" parent="." unique_id=222294469]
+[node name="中文" type="Node2D" parent="." unique_id=222294469]
 position = Vector2(558, 333)
 script = ExtResource("1_3kbsy")
 "卡牌通用纹理" = ExtResource("2_c0877")
+
+[node name="English" type="Node2D" parent="." unique_id=1478387301]
+position = Vector2(558, 333)
+script = ExtResource("3_j7xa3")
+default_card_texture = ExtResource("2_c0877")
