@@ -1,4 +1,4 @@
-extends Node2D
+extends Control
 
 @export_group("操作参数")
 ## 卡牌拖动时的速度，值为 0.0 时将不再受到拖拽影响，此值不影响甩动旋转
@@ -12,9 +12,13 @@ extends Node2D
 ## 复位时的速度值，为 0.0 时将不会进行复位
 @export_range(0,10,0.01) var 复位速度:float = 5
 ## 卡牌复位时的最小偏差值，为 0.0 时完全复位，值过小时复位会有锯齿感
-@export_range(0,0.01,0.001) var 复位修正最小值:float = 0.01
+@export_range(0,0.1,0.001) var 复位修正最小值:float = 0.01
+## 点击卡牌时，是否将点击的卡牌移至顶牌位置，值为 false 时点击将不会有任何效果
 @export var 点击移至顶牌: bool = true
+## 点击卡牌时，点击的卡牌与顶牌位置的偏移弧度范围，值为 0.0 时点击将不会有任何效果
 @export_range(0,PI,0.01) var 点击移至顶牌的执行范围: float = PI
+## 点击卡牌时，点击的卡牌移至顶牌位置的旋转时间，此属性与“旋转速度系数”属性配合使用，
+## 为 0.0 时将瞬移卡牌至位置
 @export_range(0,5,0.01) var 点击移至顶牌的旋转时间: float = 1
 
 @export_group("椭圆参数")
@@ -74,10 +78,11 @@ var 是否正在甩动 = false
 var 甩动速度:float = 0
 var 点击卡牌时位置:Vector2
 var 移动卡牌补间动画:Tween 
-
+## 需要增加卡牌纹理时请主动发出此信号，提供给此信号要增加的纹理和位置
 signal 纹理数组增加纹理信号(纹理,位置)
+## 需要删除卡牌纹理时请主动发出此信号，提供给此信号要删除的纹理和搜寻起点，删除搜索到的第一个纹理
 signal 纹理数组删除纹理信号(纹理,起点)
-
+## 点击顶牌位置时发出此信号，提供被点击的卡牌
 signal 点击顶牌信号(卡牌)
 
 func _ready():
@@ -91,7 +96,7 @@ func _process(delta):
 	queue_redraw()
 
 func _input(event: InputEvent) -> void:
-	if 拖动速度系数 == 0:
+	if 是否正在甩动:
 		return
 	if event is InputEventMouse:
 		鼠标位置 = event.position
@@ -128,6 +133,8 @@ func _input(event: InputEvent) -> void:
 		拖动卡牌(旋转弧度)
 
 func 初始化椭圆和卡牌():
+	椭圆中心 = self.global_position
+	self.global_position = Vector2.ZERO
 	椭圆中心 -= 椭圆偏移修正()
 	for i in range(卡牌最小数量):
 		if 卡牌纹理数组.size() < 卡牌最小数量:
@@ -179,7 +186,7 @@ func 偏移量恢复(delta):
 	var 需偏移修正值 = 至终点最小偏移量()
 	if abs(需偏移修正值) <= 复位修正最小值 :
 		需偏移修正值 = 0
-	移动偏移量 += 旋转速度系数*需偏移修正值*复位速度*delta
+	移动偏移量 += 需偏移修正值*复位速度*delta
 
 func 更新卡牌位置():
 	if 卡牌最小数量 <= 0:
@@ -330,7 +337,7 @@ func 移动至顶牌(卡牌: TextureRect):
 	移动卡牌补间动画.set_trans(Tween.TRANS_BACK)
 	移动卡牌补间动画.set_ease(Tween.EASE_OUT)
 	var 修正前偏移量 = 获取修正后得到常规步长的步长(需移动偏移量)
-	移动卡牌补间动画.tween_property(self, "移动偏移量", 移动偏移量+修正前偏移量,点击移至顶牌的旋转时间/旋转速度系数)
+	移动卡牌补间动画.tween_property(self, "移动偏移量", 移动偏移量+修正前偏移量,点击移至顶牌的旋转时间)
 
 func 椭圆偏移修正():
 	return 卡牌通用大小/2

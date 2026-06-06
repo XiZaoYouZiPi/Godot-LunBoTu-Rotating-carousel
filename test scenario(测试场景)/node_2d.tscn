@@ -5,14 +5,23 @@
 [ext_resource type="Script" uid="uid://cjscxcnxtw4xt" path="res://English/script/rotating_carousel.gd" id="3_j7xa3"]
 
 [node name="Node2D" type="Node2D" unique_id=1451292807]
-metadata/_edit_lock_ = true
 
-[node name="中文" type="Node2D" parent="." unique_id=222294469]
-position = Vector2(558, 333)
+[node name="中文" type="Control" parent="." unique_id=1003130094]
+layout_mode = 3
+anchors_preset = 0
+offset_left = 590.0
+offset_top = 292.0
+offset_right = 712.0
+offset_bottom = 387.0
 script = ExtResource("1_3kbsy")
 "卡牌通用纹理" = ExtResource("2_c0877")
 
-[node name="English" type="Node2D" parent="." unique_id=1478387301]
-position = Vector2(558, 333)
+[node name="English" type="Control" parent="." unique_id=522776976]
+layout_mode = 3
+anchors_preset = 0
+offset_left = 590.0
+offset_top = 292.0
+offset_right = 712.0
+offset_bottom = 387.0
 script = ExtResource("3_j7xa3")
 default_card_texture = ExtResource("2_c0877")

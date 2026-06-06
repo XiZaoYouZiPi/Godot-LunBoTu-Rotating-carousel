@@ -1,4 +1,4 @@
-extends Node2D
+extends Control
 
 @export_group("Operation Parameters")
 ## The speed of card dragging. When set to 0.0, dragging will have no effect. This value does not affect swipe rotation.
@@ -13,12 +13,14 @@ extends Node2D
 @export_range(0, 10, 0.01) var reset_speed: float = 5.0
 ## The minimum deviation threshold for resetting. When set to 0.0, it resets perfectly. 
 ## If set too small, the reset animation may appear jittery.
-@export_range(0, 0.01, 0.001) var reset_min_threshold: float = 0.01
-## Whether clicking a card moves it to the top position.
+@export_range(0, 0.1, 0.001) var reset_min_threshold: float = 0.01
+## Whether clicking a card moves it to the top position. When set to false, clicking will have no effect.
 @export var click_move_to_top: bool = true
-## The execution range (in radians) for the click-to-move-to-top action.
+## The execution range (in radians) for the click-to-move-to-top action. 
+## When set to 0.0, clicking will have no effect.
 @export_range(0, PI, 0.01) var click_move_to_top_range: float = PI
-## The rotation duration for the click-to-move-to-top action.
+## The rotation duration for the click-to-move-to-top action. This property works in conjunction 
+## with the "rotation_speed_coefficient" property. When set to 0.0, the card will teleport to the position instantly.
 @export_range(0, 5, 0.01) var click_move_to_top_duration: float = 1.0
 
 @export_group("Ellipse Parameters")
@@ -89,9 +91,12 @@ var swipe_velocity: float = 0.0
 var card_click_position: Vector2
 var move_card_tween: Tween 
 
+## Emit this signal to add a card texture. Provide the texture to add and its index position.
 signal texture_array_add_texture(texture, index)
+## Emit this signal to remove a card texture. Provide the texture to remove and the search start index. 
+## Removes the first matching texture found.
 signal texture_array_remove_texture(texture, start_index)
-
+## Emitted when the top card position is clicked. Provides the clicked card.
 signal top_card_clicked(card)
 
 func _ready():
@@ -105,7 +110,7 @@ func _process(delta):
 	queue_redraw()
 
 func _input(event: InputEvent) -> void:
-	if drag_speed_coefficient == 0:
+	if is_swiping:
 		return
 	if event is InputEventMouse:
 		mouse_position = event.position
@@ -144,6 +149,8 @@ func _input(event: InputEvent) -> void:
 		drag_cards(rotation_radian)
 
 func initialize_ellipse_and_cards():
+	ellipse_center = self.global_position
+	self.global_position = Vector2.ZERO
 	ellipse_center -= get_ellipse_offset_correction()
 	for i in range(min_card_count):
 		if card_texture_array.size() < min_card_count:
@@ -201,7 +208,7 @@ func recover_offset(delta: float):
 	var required_correction = get_min_offset_to_target()
 	if abs(required_correction) <= reset_min_threshold:
 		required_correction = 0
-	move_offset += rotation_speed_coefficient * required_correction * reset_speed * delta
+	move_offset += required_correction * reset_speed * delta
 
 func update_card_positions():
 	if min_card_count <= 0:
@@ -367,7 +374,7 @@ func move_card_to_top(card: TextureRect):
 	move_card_tween.set_trans(Tween.TRANS_BACK)
 	move_card_tween.set_ease(Tween.EASE_OUT)
 	var pre_correction_offset = get_corrected_step_from_base(required_move_offset)
-	move_card_tween.tween_property(self, "move_offset", move_offset + pre_correction_offset, click_move_to_top_duration / rotation_speed_coefficient)
+	move_card_tween.tween_property(self, "move_offset", move_offset + pre_correction_offset, click_move_to_top_duration)
 
 func get_ellipse_offset_correction() -> Vector2:
 	return card_base_size / 2
